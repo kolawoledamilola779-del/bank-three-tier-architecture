@@ -1,0 +1,14 @@
+# Pod definition file
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-01
+  labels:
+    app: app-01
+spec:
+  containers:
+    - name: app-01
+      image: nginx:latest
+      ports:
+        - containerPort: 80

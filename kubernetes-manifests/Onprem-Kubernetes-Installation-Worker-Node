@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# 1) Set Hostname
+sudo hostnamectl set-hostname Worker-Node-01
+
+# 2) Update and upgrade the system
+sudo apt update && sudo apt upgrade -y
+
+# 3) Disable swap (Required for Kubelet)
+sudo swapoff -a
+sudo sed -i '/ swap / s/^/#/' /etc/fstab
+
+# 4) Enable Kernel Modules and Sysctl Settings
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+sudo tee /etc/sysctl.d/kubernetes.conf <<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+sudo sysctl --system
+
+# 5) Install Containerd
+sudo apt update
+sudo apt install ca-certificates curl -y
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+sudo apt update
+sudo apt install containerd.io -y
+
+# 6) Configure Containerd (The Fix)
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml > /dev/null
+
+# Set SystemdCgroup and the correct pause image for v3 config
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+sudo sed -i 's|sandbox = "registry.k8s.io/pause:.*"|sandbox = "registry.k8s.io/pause:3.10"|' /etc/containerd/config.toml
+
+sudo systemctl restart containerd
+sudo systemctl enable containerd
+
+# 7) Install Kubeadm, Kubelet
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+sudo apt update
+sudo apt install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+
+echo "------------------------------------------------------------"
+echo "Worker Node base installation complete."
+echo "Now run the 'kubeadm join' command provided by your Master Node."
+echo "------------------------------------------------------------"

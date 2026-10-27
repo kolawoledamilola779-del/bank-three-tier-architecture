@@ -1,0 +1,57 @@
+
+#type: ClusterIP → internal access only
+#selector → matches Pods
+#port → service port
+#targetPort → container port
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  type: ClusterIP
+
+  selector:
+    app: my-app
+
+  ports:
+    - port: 80
+      targetPort: 80
+
+
+      ------
+      Node Port
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-nodeport-service
+spec:
+  type: NodePort
+
+  selector:
+    app: my-app
+
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30007
+
+
+
+      Load balancer
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-loadbalancer-service
+spec:
+  type: LoadBalancer
+
+  selector:
+    app: my-app
+
+  ports:
+    - port: 80
+      targetPort: 80 

@@ -1,0 +1,33 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+!.env.template
+**/secret.yaml
+**/secret.yml
+*.pem
+*.key
+*credentials*
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+crash.log
+
+# Application builds and dependencies
+node_modules/
+build/
+target/
+coverage/
+
+# Local tooling
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,21 @@
+#Explanation
+#Init container = “setup first”
+#Sidecar container = “helper running beside”
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-init-and-sidecar
+spec:
+  initContainers:
+    - name: init-myservice
+      image: busybox
+      command: ["sh", "-c", "echo Initializing...; sleep 5"]
+
+  containers:
+    - name: main-app
+      image: nginx
+
+    - name: sidecar
+      image: busybox
+      command: ["sh", "-c", "while true; do echo Sidecar running; sleep 10; done"]

@@ -1,0 +1,35 @@
+# A Deployment in Kubernetes is a higher-level controller that manages ReplicaSets and Pods automatically.
+# Function
+# Rolling updates
+#Rollbacks
+#Version control
+#Self-healing
+
+Rolling Update 
+kubectl set image deployment/my-deployment nginx-container=nginx:1.26
+
+Rolling Back
+kubectl rollout undo deployment my-deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: my-app
+
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:1.25
+          ports:
+            - containerPort: 80
+

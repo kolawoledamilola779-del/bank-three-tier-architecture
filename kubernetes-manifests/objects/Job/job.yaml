@@ -1,0 +1,15 @@
+A Job in Kubernetes is used to run a task that runs once and completes successfully.
+
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hello-job
+spec:
+  template:
+    spec:
+      containers:
+        - name: hello
+          image: busybox
+          command: ["sh", "-c", "echo Hello Kubernetes Job && sleep 5"]
+      restartPolicy: Never
+  backoffLimit: 3

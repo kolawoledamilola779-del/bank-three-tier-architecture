@@ -1,0 +1,45 @@
+A StatefulSet is a Kubernetes controller used to manage stateful applications, where each Pod needs:
+
+a stable identity
+a stable network name
+persistent storage
+
+#Persistent Storage
+Each Pod gets its own PersistentVolumeClaim (PVC).
+
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: my-stateful-app
+spec:
+  serviceName: "my-service"
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: my-stateful-app
+
+  template:
+    metadata:
+      labels:
+        app: my-stateful-app
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: data
+              mountPath: /usr/share/nginx/html
+
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: gp2   # 👈 AWS EBS StorageClass
+        resources:
+          requests:
+            storage: 5Gi

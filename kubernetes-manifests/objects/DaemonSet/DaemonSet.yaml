@@ -1,0 +1,23 @@
+A DaemonSet ensures that a copy of a Pod runs on every node (or selected nodes) in a cluster.
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: log-agent
+spec:
+  selector:
+    matchLabels:
+      app: log-agent
+
+  template:
+    metadata:
+      labels:
+        app: log-agent
+    spec:
+      containers:
+        - name: fluentd
+          image: fluent/fluentd:v1.16
+          resources:
+            limits:
+              memory: "200Mi"
+              cpu: "100m"

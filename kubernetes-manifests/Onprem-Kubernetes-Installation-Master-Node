@@ -1,0 +1,147 @@
+Installing kubernetes Cluster using Kubeadm
+===========================================
+
+#1) Update and upgrade the system
+#---------------------------------
+sudo apt update && sudo apt upgrade -y
+
+#2) Disable swap
+#---------------
+sudo swapoff -a
+sudo sed -i '/ swap / s/^/#/' /etc/fstab
+
+3) Enable Kernel Modules and Sysctl Settings
+----------------------------------------------
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+sudo tee /etc/sysctl.d/kubernetes.conf <<EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+sudo sysctl --system
+
+4) Install Docker or Containerd (Container Runtime)
+---------------------------------------------------
+sudo apt update
+sudo apt install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+sudo tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+
+sudo apt update
+
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
+
+sudo usermod -aG docker ubuntu
+
+sudo systemctl start docker
+
+sudo systemctl enable docker
+
+#sudo systemctl status docker
+
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+
+# Enable systemd cgroup
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+
+sudo sed -i 's|sandbox = "registry.k8s.io/pause:.*"|sandbox = "registry.k8s.io/pause:3.10"|' /etc/containerd/config.toml
+sudo systemctl restart containerd
+sudo systemctl enable containerd
+
+
+5) Add the Kubernetes APT Repository
+-------------------------------------
+
+sudo apt install -y apt-transport-https ca-certificates curl gpg
+
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+
+
+            Only on Master Node
+			===================
+6) Initialize the Kubernetes Control Plane
+------------------------------------------
+sudo kubeadm init --pod-network-cidr=10.0.0.0/16
+
+7) Set up kubeconfig
+--------------------
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+
+Install Cilium CNI
+8) Install cilium-cli
+---------------------
+curl -L --remote-name https://github.com/cilium/cilium-cli/releases/latest/download/cilium-linux-amd64.tar.gz
+sudo tar xzvf cilium-linux-amd64.tar.gz -C /usr/local/bin
+rm cilium-linux-amd64.tar.gz
+
+9) Install Cilium
+------------------
+cilium install
+
+
+Wait for 5 minutes
+
+10) Check Node Status and Cilium Status
+---------------------------------------
+kubectl get nodes
+cilium status
+
+
+====================================
+Troubleshooting the Public ip cert issue with managed onprem master node cluster
+-----------------------------------------------------------------------------------
+1) kubectl -n kube-system get configmap kubeadm-config -o jsonpath='{.data.ClusterConfiguration}' > kubeadm-config.yaml
+
+2 ) edit the file ( kubeadm-config.yaml ) 
+`
+apiServer:
+  certSANs:
+  - "172.31.22.194"
+  - "YOUR_PUBLIC_IP"
+`
+
+3) remove the old cert what is linked to only the private ip
+sudo mv /etc/kubernetes/pki/apiserver.crt /etc/kubernetes/pki/apiserver.crt.old
+sudo mv /etc/kubernetes/pki/apiserver.key /etc/kubernetes/pki/apiserver.key.old
+
+4) # Generate the new ones using your updated config file
+sudo kubeadm init phase certs apiserver --config kubeadm-config.yaml
+
+5) delete the old .kube/config
+    rm -rf .kube/config
+
+6) Regenerate a new config  
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+7) cat the .kube/config 
+    cat .kube/config 
+    higlight and copy and paste in the OpenLens config file.
+
+

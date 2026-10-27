@@ -1,0 +1,28 @@
+#A ReplicaSet in Kubernetes ensures that a specified number of identical Pods are always running.
+# scale up
+#kubectl scale rs my-replicaset --replicas=5
+
+# scale down
+#kubectl scale rs my-replicaset --replicas=2
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-replicaset
+spec:
+  replicas: 3
+
+  selector:
+    matchLabels:
+      app: my-app
+
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:latest
+          ports:
+            - containerPort: 80

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: 348230509416.dkr.ecr.us-east-2.amazonaws.com/netflix_frontend:12
+    ports:
+      - "3000:3000"
+    networks:
+      - dev-net	
+    mem_limit: 512m
+    cpus: 0.5
+	
+  backend:
+    image: 348230509416.dkr.ecr.us-east-2.amazonaws.com/netflix_backend:13
+    ports:
+      - "8080:8080"
+	networks:
+      - dev-net
+    	  
