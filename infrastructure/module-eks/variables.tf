@@ -2,14 +2,14 @@ variable "vpc_cidrblock" {
   description = "CIDR block for the VPC"
   type        = string
   default     = "192.168.0.0/16"
-  
+
 }
 
 variable "environment" {
   description = "Environment name (e.g., dev, staging, prod)"
   type        = string
   default     = "staging"
-  
+
 }
 
 variable "create_subnet" {
@@ -22,7 +22,7 @@ variable "countsub" {
   description = "Number of subnets to create"
   type        = number
   default     = 2
-  
+
 }
 variable "create_elastic_ip" {
   description = "Flag to create Elastic IPs"
@@ -45,14 +45,14 @@ variable "max_size" {
 variable "min_size" {
   description = "Minimum size of the EKS node group"
   type        = number
-  default     = 2 
+  default     = 2
 }
 
 variable "instance_types" {
   description = "Instance types for the EKS node group"
   type        = list(string)
-  default     = ["t2.micro"]    
-} 
+  default     = ["t3.medium"]
+}
 
 variable "capacity_type" {
   description = "Capacity type for the EKS node group"
@@ -62,12 +62,13 @@ variable "capacity_type" {
 variable "eks_version" {
   description = "EKS cluster version"
   type        = string
-  default     = "1.32"
+  default     = "1.35"
 }
+
 variable "ami_type" {
   description = "AMI type for the EKS node group"
   type        = string
-  default     = "AL2_x86_64" # Use AL2_x86_64 for x86 instances, AL2_ARM_64 for ARM instances
+  default     = "AL2023_x86_64_STANDARD"
 }
 
 variable "label_one" {
@@ -83,14 +84,10 @@ variable "public_subnet_ids" {
   type = list(string)
 }
 variable "private_subnet_ids" {
-  type = list(string)
+  type        = list(string)
   description = "List of private subnet IDs"
 }
 variable "cluster_name" {
-}
-
-variable "repository_name" {
-  
 }
 
 variable "domain-name" {}

@@ -1,7 +1,9 @@
 terraform {
   backend "s3" {
-    bucket = "my-tf-state-backend-22becd28"
-    key    = "prodution/terraform.tfstate"
-    region = "us-east-1"
+    bucket       = "bank-project-tfstate-092763967366"
+    key          = "bank-project/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
+    use_lockfile = true
   }
 }

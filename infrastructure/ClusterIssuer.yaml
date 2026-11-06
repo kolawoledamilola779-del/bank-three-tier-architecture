@@ -7,10 +7,10 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: support@digitalwitchng.online
+    email: dammynex@gmail.com
     privateKeySecretRef:
       name: letsencrypt-prod-cluster-issuer
     solvers:
-    - http01:
-        ingress:
-          ingressClassName: external-nginx
+      - http01:
+          ingress:
+            ingressClassName: external-nginx
