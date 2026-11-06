@@ -7,15 +7,13 @@ resource "aws_security_group" "mysql_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["${var.vpc_cidrblock}"]
+    cidr_blocks = [var.vpc_cidrblock]
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  egress = []
 
+  tags = {
+    Name        = "${var.environment}-mysql-sg"
+    Environment = var.environment
   }
-
 }

@@ -14,6 +14,7 @@ resource "aws_db_instance" "mysql_db_instance" {
   instance_class         = var.db_instance_class
   allocated_storage      = var.db_allocated_storage
   storage_type           = "gp3"
+  storage_encrypted      = true
   db_subnet_group_name   = aws_db_subnet_group.mysql_subnet_group.name
   vpc_security_group_ids = [var.aws_security_group_ids]
   username               = var.db_username
